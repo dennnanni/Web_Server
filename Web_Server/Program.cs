@@ -35,6 +35,7 @@ namespace Web_Server
 
             while (running)
             {
+                Console.WriteLine("Waiting for connection");
                 Socket communication = generalHandler.Accept();
 
                 do
@@ -44,16 +45,21 @@ namespace Web_Server
 
                 } while (data.IndexOf("\r\n\r\n") == -1);
 
-                string[] fields = data.Split(' ');
-                if(fields[0].ToUpper() == "GET")
+                Console.WriteLine("Data received:\n" + data);
+
+                string[] fields = data.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                if(fields[0].StartsWith("GET"))
                 {
 
-                    data = "HTTP/" + HTTPGetVersion(fields) + " 200 segue documento\r\n\r\nciao\r\n\r\n";
+                    data = "HTTP/" + HTTPGetVersion(fields[0]) + " 200 segue documento\r\nConnection: close\r\n\r\nciao\r\n\r\n";
                     communication.Send(Encoding.UTF8.GetBytes(data));
+
+                    Console.WriteLine("Data sent:\n" + data);
                 }
 
                 communication.Shutdown(SocketShutdown.Both);
                 communication.Close();
+                data = "";
             }
 
             Console.ReadKey();
@@ -61,9 +67,10 @@ namespace Web_Server
 
         }
 
-        static string HTTPGetVersion(string[] data)
+        static string HTTPGetVersion(string data)
         {
-            foreach(string value in data)
+            string[] values = data.Split(' ');
+            foreach(string value in values)
             {
                 if (value.Contains("HTTP"))
                 {
