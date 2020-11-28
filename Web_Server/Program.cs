@@ -16,11 +16,17 @@ namespace Web_Server
      * Invio di una stringa random (file)
      */
 
+
     class Program
     {
+        public enum Code : int { OK = 200, NOT_FOUND = 404 }
+
         static bool running = true;
         static void Main(string[] args)
         {
+
+            const string DIRECTORY = "pages";
+
             int port = 57348;
             byte[] bytesMsg = new byte[1024];
             string data = "";
@@ -50,11 +56,21 @@ namespace Web_Server
                 string[] fields = data.Split(new string[] { "\r\n" }, StringSplitOptions.None);
                 if(fields[0].StartsWith("GET"))
                 {
+                    string filename = fields[0].Split(' ')[1];
+                    string message = "";
 
-                    data = "HTTP/" + HTTPGetVersion(fields[0]) + " 200 segue documento\r\nConnection: close\r\n\r\nciao\r\n\r\n";
-                    communication.Send(Encoding.UTF8.GetBytes(data));
+                    if(filename == "/ls")
+                    {
+                        string tree = GetTree(DIRECTORY);
+                        message = CreateMessage(fields[0], (int)Code.OK, (Code)200, tree);
+                    }
+                    else
+                    {
+                        string path = GetFilePath(DIRECTORY, filename);
+                        
+                    }
 
-                    Console.WriteLine("Data sent:\n" + data);
+                    communication.Send(Encoding.UTF8.GetBytes(message));
                 }
 
                 communication.Shutdown(SocketShutdown.Both);
@@ -64,6 +80,13 @@ namespace Web_Server
 
             Console.ReadKey();
 
+
+        }
+
+        static string CreateMessage(string head, int code, Code info, string content)
+        {
+
+            return string.Format($"HTTP/{HTTPGetVersion(head)} {code} {info}\r\n\r\n{content}\r\n");
 
         }
 
@@ -80,5 +103,58 @@ namespace Web_Server
 
             return "1.0";
         }
+
+        static string GetFilePath(string dir, string file)
+        {
+            return null;
+        }
+
+        static string GetTree(string dir)
+        {
+            string tree = dir + "\n";
+            string current = Directory.GetCurrentDirectory();
+            string[] directories = Directory.GetDirectories(current);
+
+            for (int i = 0; i < 4 && !directories.Contains(current + dir); i++)
+            {
+                string[] tmp = current.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                string sTemp = "";
+                for (int k = 0; k < tmp.Length - 1; k++)
+                    sTemp = sTemp + tmp[k] + "\\";
+
+                current = sTemp;
+                directories = Directory.GetDirectories(current);
+            }
+
+            current = current + dir + "\\";
+
+            tree += BrowseDirectory(current);
+
+            return tree;
+
+        }
+
+        static string BrowseDirectory(string dir)
+        {
+            string list = "";
+
+            string[] files = Directory.GetFiles(dir);
+            string[] subdir = Directory.GetDirectories(dir);
+
+            foreach (string file in files)
+            {
+                list += "   " + Path.GetFileName(file) + "\n";
+            }
+
+            foreach (string sub in subdir)
+            {
+                DirectoryInfo directory = new DirectoryInfo(sub);
+                list += "   " + directory.Name + "\n";
+                list += "   " + BrowseDirectory(sub + "\\");
+            }
+
+            return list;
+        }
+
     }
 }
