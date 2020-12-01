@@ -9,36 +9,18 @@ namespace Web_Server
 {
     static class DirectoryExplorer
     {
-        static string GetTree(string dir)
+        static public string GetTree(string path, string dir)
         {
             string tree = dir + "\n";
-            string current = Directory.GetCurrentDirectory();
-            string[] directories = Directory.GetDirectories(current);
-
-            // Cerca la directory che continene la directory specificata come home directory
-            for (int i = 0; i < 4 && !directories.Contains(current + dir); i++)
-            {
-                string[] tmp = current.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-                string sTemp = "";
-
-                // Va indietro di uno step ogni ciclo
-                for (int k = 0; k < tmp.Length - 1; k++)
-                    sTemp = sTemp + tmp[k] + "\\";
-
-                current = sTemp;
-                directories = Directory.GetDirectories(current);
-            }
-
-            current = current + dir + "\\";
 
             // Esplora l'albero di file e subdirectories
-            tree += BrowseDirectory(current);
+            tree += BrowseDirectory(path);
 
             return tree;
 
         }
 
-        static string FindFile(string dir, string file)
+        static public string FindFile(string dir, string file)
         {
             // Ricava i files e le directory della directory specificata
             string[] files = Directory.GetFiles(dir);
@@ -60,7 +42,7 @@ namespace Web_Server
             return "404";
         }
 
-        static string BrowseDirectory(string dir)
+        static public string BrowseDirectory(string dir)
         {
             string list = "";
 
@@ -85,9 +67,47 @@ namespace Web_Server
             return list;
         }
 
-        static string GetFilePath(string dir, string file)
+        static public string GetFilePath(string dir, string file)
         {
             return null;
+        }
+
+        static List<string> GetDirectoryPages(string dir)
+        {
+            List<string> pages = new List<string>();
+
+            return null;
+        }
+
+        static public string GetDirectoryPage(string dir, int i)
+        {
+            string[] paths = Directory.GetFiles(dir);
+
+            if (i < paths.Length)
+                return paths[i];
+            else
+                return "404";
+        }
+
+        static public string GetDirectoryPath(string current, string dirName)
+        {
+            string[] directories = Directory.GetDirectories(current);
+
+            // Cerca la directory che continene la directory specificata come home directory
+            for (int i = 0; i < 4 && !directories.Contains(current + dirName); i++)
+            {
+                string[] tmp = current.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                string sTemp = "";
+
+                // Va indietro di uno step ogni ciclo
+                for (int k = 0; k < tmp.Length - 1; k++)
+                    sTemp = sTemp + tmp[k] + "\\";
+
+                current = sTemp;
+                directories = Directory.GetDirectories(current);
+            }
+
+            return current + dirName + "\\";
         }
     }
 }
