@@ -9,6 +9,8 @@ namespace Web_Server
 {
     static class DirectoryExplorer
     {
+        private static string[] homePagesName = { "index", "default" };
+
         static public string GetTree(string path, string dir)
         {
             string tree = dir + "\n";
@@ -18,6 +20,19 @@ namespace Web_Server
 
             return tree;
 
+        }
+
+        static public string FindFileDirectory(string dir, string file)
+        {
+            string[] files = Directory.GetFiles(dir);
+
+            foreach(string f in files)
+            {
+                if (file == Path.GetFileName(f))
+                    return f;
+            }
+
+            return "404";
         }
 
         static public string FindFile(string dir, string file)
@@ -36,7 +51,9 @@ namespace Web_Server
             {
                 // Stampa il nome della directory e poi esplora file e sottodirectories di quella attraverso la ricorsione
                 DirectoryInfo directory = new DirectoryInfo(sub);
-                return FindFile(sub + "\\", file);
+                string s = FindFile(sub + "\\", file);
+                if (s != "404")
+                    return s;
             }
 
             return "404";
@@ -79,14 +96,22 @@ namespace Web_Server
             return null;
         }
 
-        static public string GetDirectoryPage(string dir, int i)
+        static public string GetHomePage(string dir)
         {
-            string[] paths = Directory.GetFiles(dir);
+            string[] files = Directory.GetFiles(dir);
 
-            if (i < paths.Length)
-                return paths[i];
-            else
-                return "404";
+            foreach(string name in homePagesName)
+            {
+                foreach(string f in files)
+                {
+                    if(name == Path.GetFileName(f).Split('.')[0])
+                    {
+                        return f;
+                    }
+                }
+            }
+
+            return files[0];
         }
 
         static public string GetDirectoryPath(string current, string dirName)

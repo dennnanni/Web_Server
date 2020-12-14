@@ -25,7 +25,7 @@ namespace Web_Server
         static void Main(string[] args)
         {
 
-            const string DIRECTORY = "pages";
+            const string DIRECTORY = "pages"; // Punto 5, configurabilità della home directory
             string path = DirectoryExplorer.GetDirectoryPath(Directory.GetCurrentDirectory(), DIRECTORY);
 
             int port = 17754;
@@ -43,7 +43,7 @@ namespace Web_Server
             while (running)
             {
                 Console.WriteLine("Waiting for connection");
-                Socket communication = generalHandler.Accept();
+                Socket communication = generalHandler.Accept(); // Punto 1, listening su porta 17754
                 int c = -1;
 
                 do
@@ -54,18 +54,19 @@ namespace Web_Server
 
                 } while (data.IndexOf("\r\n\r\n") == -1 || data.Length != 0 && c == 4);
 
-                Console.WriteLine("Data received:\n" + data);
+                
 
                 string[] fields = data.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                if(fields[0].StartsWith("GET"))
+                if(fields[0].StartsWith("GET")) // Punto 3, acquisisce solo GET
                 {
+                    Console.WriteLine("Data received:\n" + data); // Punto 4, visualizza header in console
                     string filename = fields[0].Split(' ')[1];
                     
                     string message = "";
 
                     if(filename == "/")
                     {
-                        string homePagePath = DirectoryExplorer.GetDirectoryPage(path, 0);
+                        string homePagePath = DirectoryExplorer.GetHomePage(path);
                         Console.WriteLine(homePagePath);
                         if (homePagePath == "404")
                         {
@@ -87,6 +88,9 @@ namespace Web_Server
                         string tempPath = path;
                         if (filename.Split('/').Length > 2)
                         {
+                            // La richiesta arriva con i /, per tale motivo devo ricostruire il path compatibilmente
+                            // con i path di windows quindi \, splitto la stringa e poi aggiungo tutti i valori della 
+                            // stringa ricevuta con separatori \ fino a n-1 perché l'ultimo è il file richiesto
                             string[] part = filename.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
                             for (int i = 0; i < part.Length - 1; i++)
                                 tempPath += part[i] + "\\";
@@ -95,15 +99,17 @@ namespace Web_Server
 
                         }
 
+                        // Nel caso l'utente specifichi solo il filename nel browser, la richiesta sarà formata da
+                        // /filename, per questo devo togliere il / se voglio renderlo parte del path
                         if (filename.StartsWith("/"))
                         {
                             filename = filename.Substring(1);
                         }
 
-                        string filePath = DirectoryExplorer.FindFile(tempPath, filename);
+                        string filePath = DirectoryExplorer.FindFileDirectory(tempPath, filename);
 
                         if (filePath == "404")
-                            message = CreateMessage(fields[0], (int)Code.NOT_FOUND, (Code)400, "ERROR 404: Not Found.");
+                            message = CreateMessage(fields[0], (int)Code.NOT_FOUND, (Code)400, "ERROR 404: Not Found."); // dice solo header bo
                         else
                             using (StreamReader fin = new StreamReader(filePath))
                             {
