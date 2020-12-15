@@ -11,16 +11,22 @@ namespace Web_Server
     {
         private static string[] homePagesName = { "index", "default" };
 
-        static public string GetTree(string path, string dir)
+        static public string GetTree(string path, string dir, bool filesOnly)
         {
-            string tree = dir + "\n";
+            string tree = "<p>" + dir + "<br>";
 
             // Esplora l'albero di file e subdirectories
-            tree += BrowseDirectory(path);
+            tree += BrowseDirectory(path, filesOnly);
 
-            return tree;
+            return tree + "</p>";
 
         }
+
+        //static public string GetFilesName(string path)
+        //{
+        //    string list = "";
+
+        //}
 
         static public string FindFileDirectory(string dir, string file)
         {
@@ -59,7 +65,7 @@ namespace Web_Server
             return "404";
         }
 
-        static public string BrowseDirectory(string dir)
+        static public string BrowseDirectory(string dir, bool recursive)
         {
             string list = "";
 
@@ -70,16 +76,17 @@ namespace Web_Server
             foreach (string file in files)
             {
                 // Inserisce all'inizio i files
-                list += "   " + Path.GetFileName(file) + "\n";
+                list += "&nbsp&nbsp&nbsp&nbsp" + Path.GetFileName(file) + "<br>";
             }
 
-            foreach (string sub in subdir)
-            {
-                // Stampa il nome della directory e poi esplora file e sottodirectories di quella attraverso la ricorsione
-                DirectoryInfo directory = new DirectoryInfo(sub);
-                list += "   " + directory.Name + "\n";
-                list += "   " + BrowseDirectory(sub + "\\");
-            }
+            if(recursive)
+                foreach (string sub in subdir)
+                {
+                    // Stampa il nome della directory e poi esplora file e sottodirectories di quella attraverso la ricorsione
+                    DirectoryInfo directory = new DirectoryInfo(sub);
+                    list += "   " + directory.Name + "<br>";
+                    list += "   " + BrowseDirectory(sub + "\\", true);
+                }
 
             return list;
         }
