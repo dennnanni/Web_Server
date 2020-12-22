@@ -110,7 +110,20 @@ namespace Web_Server
                             filename = filename.Substring(1);
                         }
 
-                        if(filename == "")
+                        try
+                        {
+                            Directory.GetFiles(tempPath);
+                        }
+                        catch(Exception ex)
+                        {
+                            tempPath = "404";
+                        }
+
+                        if(tempPath == "404")
+                        {
+                            message = CreateMessage(fields[0], (int)Code.NOT_FOUND, (Code)400, "ERROR 404: Not Found.");
+                        }
+                        else if(filename == "")
                         {
                             string filesList = DirectoryExplorer.GetTree(tempPath, new DirectoryInfo(tempPath).Name, false);
                             message = CreateMessage(fields[0], (int)Code.OK, (Code)200, filesList);
@@ -150,20 +163,6 @@ namespace Web_Server
             return string.Format($"HTTP/1.0 {code} {info}\r\nConnection: close\r\nContent-Type: text/html\r\n\r\n{content}\r\n\r\n");
 
         }
-
-        //static string HTTPGetVersion(string data)
-        //{
-        //    string[] values = data.Split(' ');
-        //    foreach(string value in values)
-        //    {
-        //        if (value.Contains("HTTP"))
-        //        {
-        //            return value.Split('/')[1];
-        //        }
-        //    }
-
-        //    return "1.0";
-        //}
 
         
 
