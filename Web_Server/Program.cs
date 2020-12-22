@@ -125,8 +125,20 @@ namespace Web_Server
                         }
                         else if(filename == "")
                         {
-                            string filesList = DirectoryExplorer.GetTree(tempPath, new DirectoryInfo(tempPath).Name, false);
-                            message = CreateMessage(fields[0], (int)Code.OK, (Code)200, filesList);
+                            string homepage = DirectoryExplorer.GetHomePage(tempPath);
+                            if (homepage == null)
+                            {
+                                string filesList = DirectoryExplorer.GetTree(tempPath, new DirectoryInfo(tempPath).Name, false);
+                                message = CreateMessage(fields[0], (int)Code.OK, (Code)200, filesList);
+                            }
+                            else
+                            {
+                                using (StreamReader fin = new StreamReader(homepage))
+                                {
+                                    string content = fin.ReadToEnd();
+                                    message = CreateMessage(fields[0], (int)Code.OK, (Code)200, content);
+                                }
+                            }
                         }
                         else
                         {
@@ -140,6 +152,8 @@ namespace Web_Server
                                     string content = fin.ReadToEnd();
                                     message = CreateMessage(fields[0], (int)Code.OK, (Code)200, content);
                                 }
+
+
                         }
                         
                     }
